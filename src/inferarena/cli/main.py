@@ -12,6 +12,7 @@ from inferarena.core.experiment_spec import ExperimentSpec
 from inferarena.core.plugin_registry import PluginRegistry
 from inferarena.datasets.downloader import download_dataset, list_datasets
 from inferarena.runner import ExperimentRunner
+from inferarena.web.app import run_dashboard
 
 app = typer.Typer(help="InferArena: Experimentation platform for LLM inference systems")
 console = Console()
@@ -142,6 +143,22 @@ def list_cache_policies_cmd() -> None:
     console.print("[bold]Available cache policies:[/bold]")
     for name in registry.list_cache_policies():
         console.print(f"  - {name}")
+
+
+@app.command()
+def dashboard(
+    output_dir: Path = typer.Option(  # noqa: B008
+        Path("inferarena_outputs"), help="Directory containing experiment outputs"
+    ),
+) -> None:
+    """Launch the Streamlit dashboard for exploring results."""
+    try:
+        import streamlit  # noqa: F401
+    except ImportError as exc:
+        raise typer.BadParameter(
+            "Dashboard requires streamlit. Install it with: pip install inferarena[dashboard]"
+        ) from exc
+    run_dashboard(output_dir)
 
 
 if __name__ == "__main__":

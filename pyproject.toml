@@ -45,11 +45,13 @@ vllm = ["vllm>=0.6.0", "openai>=1.0"]
 sglang = ["sglang[all]>=0.3.0"]
 tensorrt = ["tensorrt-llm>=0.12.0"]
 plot = ["matplotlib>=3.7"]
+dashboard = ["streamlit>=1.35", "matplotlib>=3.7"]
 all = [
     "vllm>=0.6.0",
     "sglang[all]>=0.3.0",
     "tensorrt-llm>=0.12.0",
     "matplotlib>=3.7",
+    "streamlit>=1.35",
 ]
 
 [project.scripts]

@@ -58,6 +58,7 @@ See [Deployment](docs/explanation/deployment.md) for vLLM-backed Compose profile
 |-------|---------|---------|
 | dev | `pip install -e ".[dev]"` | Linting, type checking, tests |
 | plot | `pip install -e ".[plot]"` | Telemetry and latency plots |
+| dashboard | `pip install -e ".[dashboard]"` | Streamlit web dashboard |
 | vllm | `pip install -e ".[vllm]"` | vLLM real-cluster engine |
 | sglang | `pip install -e ".[sglang]"` | SGLang real-cluster engine |
 | tensorrt | `pip install -e ".[tensorrt]"` | TensorRT-LLM real-cluster engine |
@@ -151,6 +152,7 @@ See [How to Add a Scheduler](docs/how-to-guides/add-a-scheduler.md) for the full
 - Benchmark suite with standardized configs.
 - Optional telemetry and latency CDF plots.
 - Jupyter notebook dashboard for result exploration.
+- Streamlit web dashboard for interactive result exploration.
 - Docker and Docker Compose support.
 - CLI for running, comparing, benchmarking, and downloading datasets.
 
@@ -172,6 +174,18 @@ ruff format .
 ruff check . --fix
 ```
 
+## Web dashboard
+
+Launch a Streamlit app to explore results interactively:
+
+```bash
+pip install -e ".[dashboard]"
+inferarena dashboard
+```
+
+The dashboard discovers experiments under `./inferarena_outputs/` and shows a
+summary table, latency CDF comparison, and raw JSON summaries.
+
 ## Documentation
 
 - [Getting Started](docs/tutorials/getting-started.md)
@@ -184,7 +198,8 @@ ruff check . --fix
 - [Deployment](docs/explanation/deployment.md)
 - [Vidur Integration](docs/explanation/vidur-integration.md)
 - [Naming](docs/explanation/naming.md)
-- [Dashboard](notebooks/dashboard.ipynb)
+- [Web Dashboard](docs/explanation/web-dashboard.md)
+- [Jupyter Dashboard](notebooks/dashboard.ipynb)
 
 ## Contributing
 
