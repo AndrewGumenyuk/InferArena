@@ -123,6 +123,12 @@ inferarena compare --config examples/experiment.yaml \
   --schedulers fcfs,chunked_prefill,priority,sjf
 ```
 
+## See it optimize something real
+
+A variable-prompt workload with a tight token budget creates head-of-line blocking. FCFS completes 2 requests; shortest-job-first completes 33.
+
+[Read the case study →](docs/explanation/case-study.md)
+
 ## Add your own strategy
 
 Subclass `Scheduler`, implement `schedule()`, and register it:
@@ -191,6 +197,7 @@ See [CLI Reference](docs/reference/cli.md) for the complete command list.
 - [Getting Started](docs/tutorials/getting-started.md)
 - [Core Concepts](docs/explanation/concepts.md)
 - [Example Configs](examples/README.md)
+- [Case Study: beating head-of-line blocking](docs/explanation/case-study.md)
 - [How to Add a Scheduler](docs/how-to-guides/add-a-scheduler.md)
 - [How to Add a Cache Policy](docs/how-to-guides/add-a-cache-policy.md)
 - [How to Add a Router](docs/how-to-guides/add-a-router.md)

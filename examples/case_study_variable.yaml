@@ -1,0 +1,18 @@
+name: variable-prompt-case-study
+scheduler: fcfs
+cache_policy: no_op
+workload:
+  name: variable
+  generator: variable
+  num_requests: 64
+  arrival_rate: 4.0
+  prompt_tokens_min: 64
+  prompt_tokens_max: 1024
+  output_tokens_min: 16
+  output_tokens_max: 128
+  seed: 42
+engine:
+  name: simulation
+  max_tokens_per_step: 512
+max_steps: 20000
+output_dir: ./inferarena_outputs/case_study_variable

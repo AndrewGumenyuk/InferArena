@@ -10,6 +10,7 @@ This directory contains example experiment configs. Each config is a YAML file t
 | `experiment_multi_gpu.yaml` | Data-parallel multi-GPU simulation with a router. |
 | `experiment_prefix_cache.yaml` | Exact-prefix cache policy simulation. |
 | `experiment_trace.yaml` | Load requests from a ShareGPT-style trace file. |
+| `case_study_variable.yaml` | Variable prompt lengths with a tight token budget. Used in the [head-of-line blocking case study](../docs/explanation/case-study.md). |
 
 ## Real-cluster examples
 
