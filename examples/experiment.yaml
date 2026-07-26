@@ -1,0 +1,16 @@
+name: "fcfs-baseline"
+scheduler: "fcfs"
+workload:
+  name: "uniform"
+  num_requests: 32
+  arrival_rate: 2.0
+  prompt_tokens: 512
+  output_tokens: 128
+  seed: 42
+engine:
+  name: "simulation"
+  max_tokens_per_step: 2048
+  prefill_time_per_token: 0.1
+  decode_time_per_token: 20.0
+max_steps: 10000
+output_dir: "./inferarena_outputs"

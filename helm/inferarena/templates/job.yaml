@@ -1,0 +1,57 @@
+{{- if .Values.job.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "inferarena.fullname" . }}
+  labels:
+    {{- include "inferarena.labels" . | nindent 4 }}
+spec:
+  ttlSecondsAfterFinished: {{ .Values.job.ttlSecondsAfterFinished }}
+  backoffLimit: {{ .Values.job.backoffLimit }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "inferarena.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "inferarena.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      restartPolicy: {{ .Values.job.restartPolicy }}
+      containers:
+        - name: inferarena
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: {{ toYaml .Values.experiment.command | nindent 12 }}
+          args:
+            {{- range .Values.experiment.args }}
+            - {{ . | quote }}
+            {{- end }}
+            {{- range .Values.extraArgs }}
+            - {{ . | quote }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            {{- if .Values.persistence.enabled }}
+            - name: outputs
+              mountPath: /app/inferarena_outputs
+            {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "inferarena.configMapName" . }}
+        {{- if .Values.persistence.enabled }}
+        - name: outputs
+          persistentVolumeClaim:
+            claimName: {{ include "inferarena.fullname" . }}-outputs
+        {{- end }}
+{{- end }}

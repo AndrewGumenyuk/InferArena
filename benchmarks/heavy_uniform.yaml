@@ -1,0 +1,16 @@
+name: "heavy-uniform"
+scheduler: "fcfs"
+workload:
+  name: "uniform"
+  num_requests: 64
+  arrival_rate: 1.0
+  prompt_tokens: 1024
+  output_tokens: 256
+  seed: 42
+engine:
+  name: "simulation"
+  max_tokens_per_step: 4096
+  prefill_time_per_token: 0.1
+  decode_time_per_token: 20.0
+max_steps: 50000
+output_dir: "./inferarena_outputs/benchmarks/heavy_uniform"

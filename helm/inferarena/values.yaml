@@ -1,0 +1,82 @@
+# Default values for InferArena.
+
+replicaCount: 1
+
+image:
+  repository: inferarena
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+
+# Experiment configuration. The command and args are passed directly to the
+# InferArena CLI container.
+experiment:
+  command:
+    - inferarena
+  args:
+    - run
+    - --config
+    - /app/config/experiment.yaml
+  # Inline experiment YAML. If provided, a ConfigMap is created and mounted at
+  # /app/config/experiment.yaml.
+  config: ""
+  # Existing config map name to use instead of the inline config.
+  existingConfigMap: ""
+
+# Additional arguments passed to the InferArena CLI, e.g. for compare mode.
+# Override experiment.args to use these.
+extraArgs: []
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+# Persistence for experiment outputs (inferarena_outputs).
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 10Gi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Optional TTL for the Job if running experiments as one-off Jobs.
+job:
+  enabled: false
+  ttlSecondsAfterFinished: 3600
+  backoffLimit: 1
+  restartPolicy: OnFailure

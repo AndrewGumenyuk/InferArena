@@ -1,0 +1,98 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "inferarena"
+dynamic = ["version"]
+description = "An experimentation platform for LLM inference systems"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+authors = [
+    { name = "InferArena Contributors" },
+]
+keywords = ["llm", "inference", "scheduling", "simulation", "serving"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "pydantic>=2.0",
+    "typer>=0.12",
+    "rich>=13.0",
+    "pyyaml>=6.0",
+    "numpy>=1.24,<2.0",
+    "pandas>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.5.0",
+    "mypy>=1.10",
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "pre-commit>=3.7",
+]
+vllm = ["vllm>=0.6.0", "openai>=1.0"]
+sglang = ["sglang[all]>=0.3.0"]
+tensorrt = ["tensorrt-llm>=0.12.0"]
+plot = ["matplotlib>=3.7"]
+all = [
+    "vllm>=0.6.0",
+    "sglang[all]>=0.3.0",
+    "tensorrt-llm>=0.12.0",
+    "matplotlib>=3.7",
+]
+
+[project.scripts]
+inferarena = "inferarena.cli.main:app"
+
+[tool.hatch.version]
+path = "src/inferarena/__init__.py"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "--cov=inferarena --cov-report=term-missing --cov-report=html"
+markers = [
+    "slow: marks tests as slow",
+    "gpu: marks tests that require a GPU",
+    "integration: marks integration tests",
+]
+
+[tool.coverage.run]
+source = ["src/inferarena"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+]

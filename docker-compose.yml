@@ -1,0 +1,63 @@
+# Docker Compose for InferArena
+#
+# Services:
+# - inferarena: CLI experimentation platform.
+# - vllm: optional vLLM OpenAI-compatible server (disabled by default).
+#
+# Quick start:
+#   docker compose run --rm inferarena run --config examples/experiment.yaml
+#
+# With a real vLLM backend:
+#   docker compose --profile vllm up -d vllm
+#   docker compose run --rm inferarena run --config examples/experiment_vllm.yaml
+#   docker compose --profile vllm down
+
+services:
+  inferarena:
+    build:
+      context: .
+      target: base
+    image: inferarena:latest
+    container_name: inferarena
+    volumes:
+      - ./inferarena_outputs:/app/inferarena_outputs
+      - ./examples:/app/examples:ro
+      - ./benchmarks:/app/benchmarks:ro
+    environment:
+      - INFERARENA_OUTPUT_DIR=/app/inferarena_outputs
+    command: ["run", "--config", "examples/experiment.yaml"]
+    networks:
+      - inferarena-net
+
+  vllm:
+    image: vllm/vllm-openapi:latest
+    container_name: inferarena-vllm
+    profiles:
+      - vllm
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    command:
+      - --model
+      - meta-llama/Llama-2-7b-hf
+      - --tensor-parallel-size
+      - "1"
+      - --max-num-seqs
+      - "256"
+    ports:
+      - "8000:8000"
+    networks:
+      - inferarena-net
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+networks:
+  inferarena-net:
+    driver: bridge

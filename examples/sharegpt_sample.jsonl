@@ -1,0 +1,4 @@
+{"id": "sample-1", "conversations": [{"from": "human", "value": "Explain the difference between a stack and a queue in computer science."}, {"from": "gpt", "value": "A stack is LIFO (last-in-first-out) while a queue is FIFO (first-in-first-out)."}]}
+{"id": "sample-2", "conversations": [{"from": "human", "value": "What is the capital of France?"}, {"from": "gpt", "value": "Paris."}]}
+{"id": "sample-3", "conversations": [{"from": "human", "value": "Write a short Python function that reverses a list."}, {"from": "gpt", "value": "def reverse(items): return items[::-1]"}]}
+{"id": "sample-4", "conversations": [{"from": "human", "value": "Summarize the main idea behind transformer neural networks."}, {"from": "gpt", "value": "Transformers use self-attention to weigh the importance of input tokens in parallel."}]}

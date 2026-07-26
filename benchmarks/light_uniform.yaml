@@ -1,0 +1,16 @@
+name: "light-uniform"
+scheduler: "fcfs"
+workload:
+  name: "uniform"
+  num_requests: 128
+  arrival_rate: 8.0
+  prompt_tokens: 128
+  output_tokens: 32
+  seed: 42
+engine:
+  name: "simulation"
+  max_tokens_per_step: 2048
+  prefill_time_per_token: 0.1
+  decode_time_per_token: 20.0
+max_steps: 50000
+output_dir: "./inferarena_outputs/benchmarks/light_uniform"

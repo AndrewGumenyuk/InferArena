@@ -1,0 +1,17 @@
+name: sglang-real-cluster
+scheduler: fcfs
+cache_policy: no_op
+workload:
+  name: sglang-workload
+  generator: uniform
+  num_requests: 16
+  arrival_rate: 2.0
+  prompt_tokens: 256
+  output_tokens: 64
+  seed: 42
+engine:
+  name: sglang
+  model: default
+  base_url: http://localhost:30000/v1
+  api_key: dummy
+output_dir: ./inferarena_outputs/sglang

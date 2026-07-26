@@ -1,0 +1,17 @@
+name: "vllm-real-cluster"
+scheduler: "fcfs"
+cache_policy: "no_op"
+workload:
+  name: "uniform"
+  num_requests: 32
+  arrival_rate: 2.0
+  prompt_tokens: 128
+  output_tokens: 32
+  seed: 42
+engine:
+  name: "vllm"
+  model: "meta-llama/Llama-2-7b-hf"
+  base_url: "http://localhost:8000/v1"
+  api_key: "dummy"
+max_steps: 10000
+output_dir: "./inferarena_outputs"
