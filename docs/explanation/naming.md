@@ -15,6 +15,13 @@ The working project name is **InferArena**. Before committing to it for an open-
 | inferlab | Available (404) | Taken (200) | GitHub repo exists |
 | fluxbench | Available (404) | Taken (200) | GitHub repo exists |
 
+## Final decision
+
+The project and repository are named **InferArena**:
+
+- Repository: `https://github.com/AndrewGumenyuk/InferArena`
+- Package name: `inferarena`
+
 ## Recommendation
 
 **InferArena** is the cleanest available option:
