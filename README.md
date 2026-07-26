@@ -1,10 +1,12 @@
 # InferArena
 
 [![CI](https://github.com/AndrewGumenyuk/InferArena/actions/workflows/ci.yml/badge.svg)](https://github.com/AndrewGumenyuk/InferArena/actions/workflows/ci.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 
 > The open-source experimentation platform for LLM inference systems.
-
-Implement an inference strategy once. Evaluate it consistently across simulation and production inference engines. Compare against standard baselines. Publish reproducible results.
+>
+> Implement an inference strategy once. Evaluate it consistently across simulation and production inference engines. Compare against standard baselines. Publish reproducible results.
 
 ## Why InferArena?
 
@@ -21,6 +23,14 @@ Researchers often have to:
 InferArena separates research from execution.
 
 **Implement your idea once. Evaluate it consistently. Compare it fairly. Share it with others.**
+
+## Who is this for?
+
+- **Inference researchers** who want to test a new scheduling, caching, or routing idea without forking vLLM.
+- **Systems engineers** evaluating whether a policy change is worth porting to production.
+- **Students and teams** learning how LLM serving works through fast, reproducible experiments.
+
+If you are debugging a live production outage, use your production engine's native tooling instead.
 
 ## The old way vs. InferArena
 
@@ -64,17 +74,20 @@ Done.
                    │
          ┌─────────┴──────────┐
          ▼                    ▼
-     Vidur Simulator      Real Engine
-                              │
-         ┌──────────┬──────────┐
-         ▼          ▼          ▼
-       vLLM       SGLang    TensorRT
-         │
-         ▼
-      Standard Metrics
-         │
-         ▼
-    Reproducible Report
+   Simulation Engine      Real Engine
+         │                    │
+         ▼                    ▼
+   Single/Multi-GPU    ┌────────┬────────┐
+       simulator       ▼        ▼        ▼
+         │           vLLM    SGLang  TensorRT
+         │             │      │        │
+         └─────────────┴──────┴────────┘
+                       │
+                       ▼
+                Standard Metrics
+                       │
+                       ▼
+                Reproducible Report
 ```
 
 ## Quick start
@@ -127,6 +140,16 @@ inferarena compare --config examples/experiment.yaml \
 
 A variable-prompt workload with a tight token budget creates head-of-line blocking. FCFS completes 2 requests; shortest-job-first completes 33.
 
+```bash
+inferarena compare --config examples/case_study_variable.yaml \
+  --schedulers fcfs,sjf
+```
+
+| Scheduler | Completed | Throughput (rps) |
+|-----------|-----------|------------------|
+| FCFS      | 2         | 0.09             |
+| SJF       | 33        | 0.93             |
+
 [Read the case study →](docs/explanation/case-study.md)
 
 ## Add your own strategy
@@ -160,6 +183,10 @@ See [How to Add a Scheduler](docs/how-to-guides/add-a-scheduler.md) for the full
 - **Real-engine execution** — validate on vLLM, SGLang, and TensorRT-LLM.
 - **Standard metrics** — TTFT, latency, throughput, queue time, cache hit rate.
 - **Reproducible reports** — JSON summaries, telemetry, plots, and comparison tables.
+
+## Project status
+
+InferArena is early but functional. The simulation engine, plugin registry, CLI, reporting pipeline, and built-in schedulers/cache policies are implemented and tested. Real-cluster adapters for vLLM, SGLang, and TensorRT-LLM are available via optional extras. A Vidur-based high-fidelity simulator is on the roadmap.
 
 ## Install extras
 
