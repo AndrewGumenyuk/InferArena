@@ -18,6 +18,7 @@ Start SGLang separately, for example::
 from __future__ import annotations
 
 import asyncio
+import logging
 import time
 from typing import Any
 
@@ -27,6 +28,8 @@ from inferarena.core.experiment_spec import EngineSpec, ExperimentSpec
 from inferarena.core.request import Request
 from inferarena.core.scheduler import Scheduler
 from inferarena.metrics.result import ExperimentResult, RequestResult
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def _prompt_text(request: Request) -> str:
@@ -150,7 +153,7 @@ class SGLangEngine(ExecutionEngine):
                     result.first_token_time = now_ms
             result.completion_time = time.monotonic() * 1000.0
         except Exception as exc:  # pragma: no cover - runtime errors are logged, not tested
-            print(f"Request {request.request_id} failed: {exc}")
+            _LOGGER.warning("Request %s failed: %s", request.request_id, exc)
 
         return result
 

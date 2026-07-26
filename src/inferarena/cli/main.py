@@ -145,6 +145,15 @@ def list_cache_policies_cmd() -> None:
         console.print(f"  - {name}")
 
 
+@app.command("list-routers")
+def list_routers_cmd() -> None:
+    """List available routers."""
+    registry = PluginRegistry()
+    console.print("[bold]Available routers:[/bold]")
+    for name in registry.list_routers():
+        console.print(f"  - {name}")
+
+
 @app.command()
 def dashboard(
     output_dir: Path = typer.Option(  # noqa: B008

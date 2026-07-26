@@ -1,5 +1,7 @@
 # InferArena
 
+[![CI](https://github.com/AndrewGumenyuk/InferArena/actions/workflows/ci.yml/badge.svg)](https://github.com/AndrewGumenyuk/InferArena/actions/workflows/ci.yml)
+
 > The open-source experimentation platform for LLM inference systems.
 
 Implement an inference strategy once. Evaluate it consistently across simulation and production inference engines. Compare against standard baselines. Publish reproducible results.

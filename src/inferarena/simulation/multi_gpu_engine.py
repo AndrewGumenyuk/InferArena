@@ -5,11 +5,12 @@ from __future__ import annotations
 from inferarena.core.cache_policy import CachePolicy
 from inferarena.core.execution_engine import ExecutionEngine
 from inferarena.core.experiment_spec import EngineSpec, ExperimentSpec
+from inferarena.core.plugin_registry import PluginRegistry
 from inferarena.core.request import Request
 from inferarena.core.scheduler import Scheduler
 from inferarena.metrics.collector import MetricsCollector
 from inferarena.metrics.result import ExperimentResult, RequestResult
-from inferarena.simulation.router import LeastLoadedRouter, RoundRobinRouter, Router
+from inferarena.simulation.router import Router
 from inferarena.simulation.worker import Worker
 
 
@@ -84,12 +85,9 @@ class MultiGPUSimulationEngine(ExecutionEngine):
 
     def _create_router(self, spec: ExperimentSpec) -> Router:
         """Create the request router from the cluster spec."""
-        name = spec.cluster.router
-        if name == "round_robin":
-            return RoundRobinRouter()
-        if name == "least_loaded":
-            return LeastLoadedRouter()
-        raise ValueError(f"Unknown router: {name}")
+        registry = PluginRegistry()
+        router_cls = registry.get_router(spec.cluster.router)
+        return router_cls()
 
     @staticmethod
     def _aggregate_results(results: list[ExperimentResult]) -> ExperimentResult:
