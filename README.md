@@ -152,26 +152,47 @@ inferarena compare --config examples/case_study_variable.yaml \
 
 [Read the case study →](docs/explanation/case-study.md)
 
+## What you can do today
+
+- **Run scheduler experiments without a GPU.** The simulation engine runs deterministic workloads in seconds on a laptop.
+- **Compare baselines out of the box.** FCFS, chunked prefill, priority, shortest-job-first, and round-robin are built in.
+- **Test a custom scheduler in under 50 lines of Python.** Implement one method, register it, and run it against the built-ins.
+- **Evaluate cache policies.** Compare no-op and exact-prefix caching on synthetic or trace workloads.
+- **Validate on real engines.** Switch the engine to vLLM, SGLang, or TensorRT-LLM and run the same strategy through OpenAI-compatible APIs.
+- **Generate reports and plots.** Every run writes JSON summaries, per-request traces, telemetry, comparison tables, and optional latency CDFs.
+- **Explore results in a dashboard.** Launch `inferarena dashboard` to browse experiments and compare latency distributions.
+
+InferArena is a research accelerator, not a production serving system. Use it to decide whether an idea is worth porting into vLLM or another engine.
+
 ## Add your own strategy
 
-Subclass `Scheduler`, implement `schedule()`, and register it:
+A scheduler is a small class with one method. Here is a greedy shortest-job-first scheduler that packs the batch by estimated prefill cost:
 
 ```python
-from inferarena import Scheduler, Batch
+from inferarena.core.batch import Batch
+from inferarena.core.scheduler import Scheduler
+from inferarena.core.system_state import SystemState
 
 
-class MyScheduler(Scheduler):
-    name = "my_scheduler"
+class GreedyScheduler(Scheduler):
+    name = "greedy"
 
-    def schedule(self, state):
-        return Batch(requests=state.waiting[:1])
+    def schedule(self, state: SystemState) -> Batch:
+        batch = Batch()
+        used = 0
+        for request in state.running + state.waiting:
+            cost = 1 if request.is_prefill_complete else request.prompt_tokens
+            if used + cost <= state.budget.max_tokens:
+                batch.requests.append(request)
+                used += cost
+        return batch
 ```
 
-Then run it exactly like the built-ins:
+Register it, then run it against built-in baselines:
 
 ```bash
 inferarena compare --config examples/experiment.yaml \
-  --schedulers fcfs,my_scheduler
+  --schedulers fcfs,greedy
 ```
 
 See [How to Add a Scheduler](docs/how-to-guides/add-a-scheduler.md) for the full guide.
@@ -188,7 +209,14 @@ See [How to Add a Scheduler](docs/how-to-guides/add-a-scheduler.md) for the full
 
 InferArena is early but functional. The simulation engine, plugin registry, CLI, reporting pipeline, and built-in schedulers/cache policies are implemented and tested. Real-cluster adapters for vLLM, SGLang, and TensorRT-LLM are available via optional extras. A Vidur-based high-fidelity simulator is on the roadmap.
 
-## Install extras
+## How this fits in
+
+| Tool | What it does | InferArena's role |
+|------|--------------|-------------------|
+| vLLM / SGLang / TensorRT-LLM | Production inference engines. | InferArena plugs into them, but you do not modify their internals to test an idea. |
+| vLLM benchmark | Measures a single engine on a fixed workload. | InferArena lets you swap strategies and compare them on the same workload, then move the best one to the engine. |
+| Vidur | High-fidelity simulator for LLM clusters. | InferArena is a lighter research harness today; a Vidur adapter is planned for higher-fidelity simulation. |
+| MLPerf | Standardized inference benchmark suite. | InferArena is for experimenting with new strategies, not for publishing official benchmark scores. |
 
 | Extra | Command | Purpose |
 |-------|---------|---------|
