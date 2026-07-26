@@ -1,38 +1,31 @@
 # Architecture
 
-InferArena is built around a small harness pattern:
+InferArena separates inference decisions from execution. Researchers implement small, pluggable **inference components** while the framework handles workloads, execution, metrics, and reporting across simulation and production engines.
 
 ```text
-                InferArena
-
-          Experiment Definition
-                   │
-         ┌─────────┴──────────┐
-         ▼                    ▼
-     Vidur Simulator      Real Engine
-                              │
-         ┌──────────┬──────────┐
-         ▼          ▼          ▼
-       vLLM       SGLang    TensorRT
-         │
-         ▼
-      Standard Metrics
-         │
-         ▼
-    Reproducible Report
+              Experiment
+                  │
+                  ▼
+        Inference Components
+  (Scheduler / Cache / Router)
+                  │
+                  ▼
+         Execution Engine
+     ┌────────────┴────────────┐
+     ▼                         ▼
+ Simulation                Real Engine
+                               │
+                    ┌──────────┼──────────┐
+                    ▼          ▼          ▼
+                  vLLM      SGLang    TensorRT
+                  │
+                  ▼
+          Metrics & Reports
 ```
-
-- **Inference components** implement a decision strategy: scheduler, cache policy, router, and future component types.
-- **ExperimentSpec** declares what to run.
-- **ExecutionEngine** abstracts simulation, emulation, and real-cluster runs.
-- **ExperimentRunner** orchestrates the full pipeline.
-- **MetricsCollector** and **ReportGenerator** capture and emit results.
-
-This separation keeps components thin and the harness reusable.
 
 ## Inference components
 
-An inference component is any pluggable decision in the inference pipeline.
+An inference component is a small, pluggable decision module that modifies one aspect of the inference pipeline while everything else remains fixed.
 
 ```text
 InferenceComponent
@@ -43,24 +36,53 @@ InferenceComponent
        └── (future: BatchPolicy, KVPolicy, MoEPolicy, ...)
 ```
 
-Each component inherits from a small base class and implements a single method. For example, a scheduler implements `schedule(state) -> Batch`. This lets researchers focus on the idea rather than the surrounding engine code.
+Each component inherits from a small base class and implements a single, component-specific method. A scheduler implements `schedule(state) -> Batch`. A cache policy implements `lookup(request)` and `store(request)`. A router picks a replica for an incoming request.
+
+This lets researchers focus on the idea rather than the surrounding engine code.
 
 ## Engines
 
 Engines execute the workload. The same component can be evaluated across multiple engines.
 
-- `SimulationEngine`: fast single-GPU discrete-event simulation.
-- `MultiGPUSimulationEngine`: data-parallel simulation across multiple workers.
-- `VLLMEngine`: real-cluster execution via vLLM's OpenAI-compatible API.
-- `SGLangEngine`: real-cluster execution via SGLang's OpenAI-compatible API.
-- `TensorRTEngine`: real-cluster execution via TensorRT-LLM's OpenAI-compatible API.
-- `VidurEngine`: planned adapter for high-fidelity Vidur simulation.
+| Engine | Purpose |
+|---|---|
+| `SimulationEngine` | Fast deterministic experiments on a laptop. |
+| `MultiGPUSimulationEngine` | Simulate multiple GPUs and routing between them. |
+| `VLLMEngine` | Execute against a real vLLM deployment. |
+| `SGLangEngine` | Execute against a real SGLang deployment. |
+| `TensorRTEngine` | Execute against a real TensorRT-LLM deployment. |
+| `VidurEngine` | Planned adapter for high-fidelity Vidur simulation. |
 
 ## Execution flow
 
-1. The runner loads the `ExperimentSpec` from YAML.
-2. It instantiates the selected inference component plugins.
-3. It creates the execution engine declared in the spec.
-4. The engine runs the workload and emits per-request results.
-5. The metrics collector aggregates results.
-6. The report generator writes `summary.json`, `telemetry.jsonl`, `requests.json`, optional plots, and markdown reports.
+1. **Define an experiment** in a YAML config.
+2. **Select inference components** to evaluate.
+3. **Choose an execution engine**: simulation or real cluster.
+4. **Run the workload**.
+5. **Collect standardized metrics**.
+6. **Generate reproducible reports**.
+
+```text
+experiment.yaml
+        │
+        ▼
+ExperimentRunner
+        │
+        ▼
+Inference Components
+        │
+        ▼
+Execution Engine
+        │
+        ▼
+Metrics
+        │
+        ▼
+Report
+```
+
+## Design philosophy
+
+InferArena separates decision logic (what policy to use) from execution (where it runs). Researchers implement small inference components while the framework handles workloads, execution, metrics, and reporting. This makes experiments easier to reproduce and compare across engines.
+
+The scheduler plugin is the star. The engine is interchangeable.

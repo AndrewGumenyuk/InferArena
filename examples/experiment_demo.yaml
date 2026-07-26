@@ -1,0 +1,17 @@
+name: "demo-real-engine"
+scheduler: "fcfs"
+cache_policy: "no_op"
+workload:
+  name: "uniform"
+  num_requests: 8
+  arrival_rate: 1.0
+  prompt_tokens: 128
+  output_tokens: 16
+  seed: 42
+engine:
+  name: "vllm"
+  model: "mock-model"
+  base_url: "http://mock-server:8000/v1"
+  api_key: "dummy"
+max_steps: 10000
+output_dir: "./inferarena_outputs/demo_real_engine"

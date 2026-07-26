@@ -68,26 +68,24 @@ Done.
 ## What you get
 
 ```text
-                InferArena
-
-          Experiment Definition
-                   │
-         ┌─────────┴──────────┐
-         ▼                    ▼
-   Simulation Engine      Real Engine
-         │                    │
-         ▼                    ▼
-   Single/Multi-GPU    ┌────────┬────────┐
-       simulator       ▼        ▼        ▼
-         │           vLLM    SGLang  TensorRT
-         │             │      │        │
-         └─────────────┴──────┴────────┘
-                       │
-                       ▼
-                Standard Metrics
-                       │
-                       ▼
-                Reproducible Report
+              Experiment
+                  │
+                  ▼
+        Inference Components
+  (Scheduler / Cache / Router)
+                  │
+                  ▼
+         Execution Engine
+     ┌────────────┴────────────┐
+     ▼                         ▼
+ Simulation                Real Engine
+                               │
+                    ┌──────────┼──────────┐
+                    ▼          ▼          ▼
+                  vLLM      SGLang    TensorRT
+                  │
+                  ▼
+          Metrics & Reports
 ```
 
 ## Quick start
@@ -145,12 +143,35 @@ inferarena compare --config examples/case_study_variable.yaml \
   --schedulers fcfs,sjf
 ```
 
+![FCFS vs SJF on variable prompt lengths](docs/assets/case-study-comparison.png)
+
 | Scheduler | Completed | Throughput (rps) |
 |-----------|-----------|------------------|
 | FCFS      | 2         | 0.09             |
 | SJF       | 33        | 0.93             |
 
 [Read the case study →](docs/explanation/case-study.md)
+
+## Try it with a real-engine demo
+
+InferArena can evaluate the same strategy against real inference engines through their OpenAI-compatible APIs. To see this without a GPU, run the included mock server demo:
+
+```bash
+# Terminal 1: start the mock engine
+python scripts/mock_openai_server.py --port 8000
+
+# Terminal 2: run InferArena against it
+inferarena compare --config examples/experiment_demo.yaml \
+  --schedulers fcfs,sjf
+```
+
+Or use Docker Compose:
+
+```bash
+docker compose -f docker-compose.demo.yml up --build
+```
+
+See [From simulation to a real engine](docs/tutorials/simulation-to-real-engine.md) for the full tutorial.
 
 ## What you can do today
 

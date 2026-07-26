@@ -1,0 +1,61 @@
+# Docker Compose demo: InferArena + mock OpenAI-compatible server.
+#
+# This demo runs InferArena against a mock LLM server so you can see the
+# real-engine integration without a GPU. The mock server implements the
+# OpenAI chat completions API and streams fake tokens.
+#
+# Quick start:
+#   docker compose -f docker-compose.demo.yml up --build
+#
+# The inferarena service will wait for the mock server, then run the demo
+# experiment and write outputs to ./inferarena_outputs.
+#
+# To run interactively:
+#   docker compose -f docker-compose.demo.yml run --rm inferarena \
+#     compare --config examples/experiment_demo.yaml --schedulers fcfs,sjf
+
+services:
+  mock-server:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM python:3.12-slim-bookworm
+        WORKDIR /app
+        COPY scripts/mock_openai_server.py /app/mock_openai_server.py
+        CMD ["python", "/app/mock_openai_server.py", "--host", "0.0.0.0", "--port", "8000"]
+    container_name: inferarena-mock-server
+    ports:
+      - "8000:8000"
+    networks:
+      - inferarena-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/v1/chat/completions')"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+      start_period: 2s
+
+  inferarena:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM inferarena:latest
+        RUN pip install --no-cache-dir openai>=1.0
+        ENTRYPOINT ["inferarena"]
+        CMD ["--help"]
+    container_name: inferarena-demo
+    depends_on:
+      mock-server:
+        condition: service_healthy
+    volumes:
+      - ./inferarena_outputs:/app/inferarena_outputs
+      - ./examples:/app/examples:ro
+    environment:
+      - INFERARENA_OUTPUT_DIR=/app/inferarena_outputs
+    command: ["run", "--config", "examples/experiment_demo.yaml"]
+    networks:
+      - inferarena-net
+
+networks:
+  inferarena-net:
+    driver: bridge
