@@ -162,12 +162,9 @@ def dashboard(
 ) -> None:
     """Launch the Streamlit dashboard for exploring results."""
     try:
-        import streamlit  # noqa: F401
+        run_dashboard(output_dir)
     except ImportError as exc:
-        raise typer.BadParameter(
-            "Dashboard requires streamlit. Install it with: pip install inferarena[dashboard]"
-        ) from exc
-    run_dashboard(output_dir)
+        raise typer.BadParameter(str(exc)) from exc
 
 
 if __name__ == "__main__":

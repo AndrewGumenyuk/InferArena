@@ -22,11 +22,13 @@ import logging
 import time
 from typing import Any
 
+from inferarena.core.batch import Batch
 from inferarena.core.cache_policy import CachePolicy
 from inferarena.core.execution_engine import ExecutionEngine
 from inferarena.core.experiment_spec import EngineSpec, ExperimentSpec
 from inferarena.core.request import Request
 from inferarena.core.scheduler import Scheduler
+from inferarena.metrics.collector import MetricsCollector
 from inferarena.metrics.result import ExperimentResult, RequestResult
 
 _LOGGER = logging.getLogger(__name__)
@@ -63,6 +65,7 @@ class VLLMEngine(ExecutionEngine):
         self.scheduler = scheduler
         self.engine_spec = engine_spec or EngineSpec()
         self.cache_policy = cache_policy
+        self.metrics = MetricsCollector()
 
     def run(self, spec: ExperimentSpec) -> ExperimentResult:
         """Run the workload against the vLLM deployment and return metrics."""
@@ -91,6 +94,7 @@ class VLLMEngine(ExecutionEngine):
             (r.completion_time or 0.0 for r in results),
             default=0.0,
         )
+        self._record_metrics(results)
         return ExperimentResult(
             scheduler_name=self.scheduler.name,
             total_steps=len(results),
@@ -118,7 +122,9 @@ class VLLMEngine(ExecutionEngine):
             if delay > 0:
                 await asyncio.sleep(delay)
 
-            task = asyncio.create_task(self._call_api(client, request, model, max_tokens))
+            task = asyncio.create_task(
+                self._call_api(client, request, model, max_tokens, experiment_start)
+            )
             tasks.append(task)
 
         if tasks:
@@ -131,6 +137,7 @@ class VLLMEngine(ExecutionEngine):
         request: Request,
         model: str,
         max_tokens: int,
+        experiment_start: float,
     ) -> RequestResult:
         """Call the vLLM API for a single request and record timings."""
         result = RequestResult(
@@ -141,6 +148,7 @@ class VLLMEngine(ExecutionEngine):
         )
         first_token_time: float | None = None
         output_tokens = 0
+        start_ms = experiment_start * 1000.0
 
         try:
             stream = await client.chat.completions.create(
@@ -150,19 +158,39 @@ class VLLMEngine(ExecutionEngine):
                 stream=True,
             )
             async for chunk in stream:
-                now_ms = time.monotonic() * 1000.0
+                now_ms = time.monotonic() * 1000.0 - start_ms
                 if first_token_time is None:
                     first_token_time = now_ms
                     result.first_token_time = now_ms
                 delta = chunk.choices[0].delta.content
                 if delta:
                     output_tokens += 1
-            result.completion_time = time.monotonic() * 1000.0
+            result.completion_time = time.monotonic() * 1000.0 - start_ms
         except Exception as exc:  # pragma: no cover - runtime errors are logged, not tested
             # Log the error but keep the partial result so the experiment can continue.
             _LOGGER.warning("Request %s failed: %s", request.request_id, exc)
 
         return result
+
+    def _record_metrics(self, results: list[RequestResult]) -> None:
+        """Populate the metrics collector from per-request results."""
+        self.metrics = MetricsCollector()
+        completed = 0
+        for step, result in enumerate(results, start=1):
+            if result.completion_time is not None:
+                completed += 1
+            self.metrics.record_step(
+                step=step,
+                time=result.completion_time or result.arrival_time,
+                batch=Batch(),
+                waiting=0,
+                running=len(results) - step,
+                completed=completed,
+                extra={
+                    "first_token_time": result.first_token_time,
+                    "completion_time": result.completion_time,
+                },
+            )
 
     def _base_url(self) -> str:
         """Return the vLLM base URL from the engine spec or default."""

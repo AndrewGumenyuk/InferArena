@@ -31,6 +31,10 @@ class EngineSpec(BaseModel):
     max_tokens_per_step: int = 2048
     prefill_time_per_token: float = 0.1
     decode_time_per_token: float = 20.0
+    # Real-engine adapter fields
+    model: str = "vllm-model"
+    base_url: str = "http://localhost:8000/v1"
+    api_key: str = "dummy"
 
 
 class WorkerSpec(BaseModel):

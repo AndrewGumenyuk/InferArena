@@ -6,7 +6,11 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-import streamlit as st
+
+try:
+    import streamlit as st
+except ImportError:  # pragma: no cover - optional dependency
+    st = None  # type: ignore[assignment]
 
 from inferarena.reporting.dashboard import discover_experiments, load_request_results
 
@@ -43,8 +47,17 @@ def _plot_latency_cdf(summaries: list[dict[str, Any]]) -> Any:
     return fig
 
 
+def _require_streamlit() -> None:
+    """Raise a helpful error if streamlit is not installed."""
+    if st is None:
+        raise ImportError(
+            "Dashboard requires streamlit. Install it with: pip install inferarena[dashboard]"
+        )
+
+
 def main() -> None:
     """Run the InferArena Streamlit dashboard."""
+    _require_streamlit()
     st.set_page_config(page_title="InferArena Dashboard", layout="wide")
     st.title("InferArena Dashboard")
     st.markdown("Explore experiment results produced by the `inferarena` CLI.")
@@ -98,6 +111,7 @@ def main() -> None:
 
 def run_dashboard(output_dir: Path | str = "inferarena_outputs") -> None:
     """Launch the Streamlit dashboard (entry point for CLI and tests)."""
+    _require_streamlit()
     import sys
 
     import streamlit.web.cli as stcli
