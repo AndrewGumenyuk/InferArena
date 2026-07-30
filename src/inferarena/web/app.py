@@ -7,12 +7,13 @@ from typing import Any
 
 import pandas as pd
 
+from inferarena.reporting.dashboard import discover_experiments, load_request_results
+
+st: Any
 try:
     import streamlit as st
 except ImportError:  # pragma: no cover - optional dependency
-    st = None  # type: ignore[assignment]
-
-from inferarena.reporting.dashboard import discover_experiments, load_request_results
+    st = None
 
 
 def _summaries_to_df(summaries: list[dict[str, Any]]) -> pd.DataFrame:
