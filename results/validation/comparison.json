@@ -1,0 +1,36 @@
+{
+  "simulation": {
+    "scheduler": "fcfs",
+    "completed_requests": 2,
+    "total_steps": 20000,
+    "total_time_ms": 25286.55,
+    "throughput_rps": 0.08,
+    "ttft_p50_ms": 21.88,
+    "ttft_p99_ms": 34.59,
+    "latency_p50_ms": 896.48,
+    "latency_p99_ms": 1270.47,
+    "queue_time_p50_ms": 2.83,
+    "tbt_p50_ms": 20.07,
+    "prefill_p50_ms": 19.05,
+    "cache_hits": 0,
+    "cache_lookups": 381,
+    "cache_hit_rate": 0.0
+  },
+  "mock_server": {
+    "scheduler": "fcfs",
+    "completed_requests": 8,
+    "total_steps": 8,
+    "total_time_ms": 22545.37,
+    "throughput_rps": 0.35,
+    "ttft_p50_ms": 2318.02,
+    "ttft_p99_ms": 6678.11,
+    "latency_p50_ms": 4612.31,
+    "latency_p99_ms": 8959.77,
+    "queue_time_p50_ms": 0.0,
+    "tbt_p50_ms": 18.01,
+    "prefill_p50_ms": 0.0,
+    "cache_hits": 0,
+    "cache_lookups": 0,
+    "cache_hit_rate": 0.0
+  }
+}
