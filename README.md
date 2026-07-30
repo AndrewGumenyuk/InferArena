@@ -33,7 +33,15 @@ InferArena separates research from execution.
 - **Systems engineers** evaluating whether a policy change is worth porting to production.
 - **Students and teams** learning how LLM serving works through fast, reproducible experiments.
 
-If you are debugging a live production outage, use your production engine's native tooling instead.
+## When to use it — and when not to
+
+| Use InferArena to... | Do NOT use InferArena to... |
+|---|---|
+| Prototype a scheduling/caching/routing idea before porting it into an engine | Serve production traffic — it is a research harness, not a serving system |
+| Compare policies on identical workloads with identical metrics | Debug a live production outage — use your engine's native tooling |
+| Reproduce a published scheduler and verify its claims (see the Sarathi-Serve case study) | Publish official benchmark scores — that is MLPerf's job |
+| Regress-test a policy change in CI before rolling it out | Evaluate model quality (accuracy, toxicity) — InferArena measures systems behavior, not model behavior |
+| Teach and learn how LLM serving works | Replace high-fidelity cluster simulators for capacity planning (a Vidur adapter is planned) |
 
 ## The old way vs. InferArena
 
@@ -94,7 +102,9 @@ Done.
 ## Quick start
 
 ```bash
-# Install
+# Clone and install
+git clone https://github.com/AndrewGumenyuk/InferArena.git
+cd InferArena
 pip install -e ".[dev]"
 
 # Run a built-in experiment
