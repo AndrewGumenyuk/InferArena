@@ -280,6 +280,7 @@ See [CLI Reference](docs/reference/cli.md) for the complete command list.
 - [How to Add a Scheduler](docs/how-to-guides/add-a-scheduler.md)
 - [How to Add a Cache Policy](docs/how-to-guides/add-a-cache-policy.md)
 - [How to Add a Router](docs/how-to-guides/add-a-router.md)
+- [How to Calibrate Against a Real Engine](docs/how-to-guides/calibrate-against-a-real-engine.md)
 - [Architecture](docs/explanation/architecture.md)
 - [Simulation Assumptions and Limitations](docs/explanation/simulation-assumptions.md)
 - [Validation and Fidelity](docs/explanation/validation.md)

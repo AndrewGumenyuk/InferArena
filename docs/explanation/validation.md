@@ -72,5 +72,10 @@ The bar we intend to hit before calling the simulator "validated":
    similar? Absolute millisecond parity is not the goal — decision fidelity is.
 5. Publish the results, including where the simulator diverges.
 
+`scripts/calibrate_against_vllm.py` automates exactly this — see
+[How to calibrate against a real engine](../how-to-guides/calibrate-against-a-real-engine.md).
+The script is ready; it has not yet been run against GPU hardware (contributions
+of results are welcome).
+
 If you run this comparison yourself, we'd genuinely like the data — open an
 issue with your config and measurements.
