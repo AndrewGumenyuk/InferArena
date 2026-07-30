@@ -1,6 +1,7 @@
 # InferArena
 
 [![CI](https://github.com/AndrewGumenyuk/InferArena/actions/workflows/ci.yml/badge.svg)](https://github.com/AndrewGumenyuk/InferArena/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/AndrewGumenyuk/InferArena)](https://github.com/AndrewGumenyuk/InferArena/releases)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 
@@ -157,7 +158,7 @@ inferarena compare --config examples/case_study_variable.yaml \
 
 ## Try it with a real-engine demo
 
-InferArena can evaluate the same strategy against real inference engines through their OpenAI-compatible APIs. To see this without a GPU, run the included mock server demo:
+InferArena can replay the same workload against real inference engines through their OpenAI-compatible APIs and measure latency from the outside. To see this without a GPU, run the included mock server demo:
 
 ```bash
 # Terminal 1: start the mock engine
@@ -179,10 +180,10 @@ See [From simulation to a real engine](docs/tutorials/simulation-to-real-engine.
 ## What you can do today
 
 - **Run scheduler experiments without a GPU.** The simulation engine runs deterministic workloads in seconds on a laptop.
-- **Compare baselines out of the box.** FCFS, chunked prefill, priority, shortest-job-first, and round-robin are built in.
+- **Compare baselines out of the box.** FCFS, SJF, priority, round-robin, chunked prefill, and a Sarathi-Serve reproduction (arXiv:2403.02310) are built in.
 - **Test a custom scheduler in under 50 lines of Python.** Implement one method, register it, and run it against the built-ins.
 - **Evaluate cache policies.** Compare no-op and exact-prefix caching on synthetic or trace workloads.
-- **Validate on real engines.** Switch the engine to vLLM, SGLang, or TensorRT-LLM and run the same strategy through OpenAI-compatible APIs.
+- **Replay workloads against real engines.** Point the same experiment at a vLLM, SGLang, or TensorRT-LLM deployment and measure TTFT/latency from the outside. (Plugins don't execute inside the engine yet — see [Validation and Fidelity](docs/explanation/validation.md).)
 - **Generate reports and plots.** Every run writes JSON summaries, per-request traces, telemetry, comparison tables, and optional latency CDFs.
 - **Explore results in a dashboard.** Launch `inferarena dashboard` to browse experiments and compare latency distributions.
 
@@ -225,13 +226,13 @@ See [How to Add a Scheduler](docs/how-to-guides/add-a-scheduler.md) for the full
 
 - **Plugin architecture** — implement schedulers, cache policies, and routers as interchangeable components.
 - **Fast simulation** — run experiments without GPUs.
-- **Real-engine execution** — validate on vLLM, SGLang, and TensorRT-LLM.
+- **Real-engine replay** — measure vLLM, SGLang, and TensorRT-LLM deployments under identical workloads.
 - **Standard metrics** — TTFT, latency, throughput, queue time, cache hit rate.
 - **Reproducible reports** — JSON summaries, telemetry, plots, and comparison tables.
 
 ## Project status
 
-InferArena is early but functional. The simulation engine, plugin registry, CLI, reporting pipeline, and built-in schedulers/cache policies are implemented and tested. Real-cluster adapters for vLLM, SGLang, and TensorRT-LLM are available via optional extras. A Vidur-based high-fidelity simulator is on the roadmap.
+**[v0.1.0 is out](https://github.com/AndrewGumenyuk/InferArena/releases/tag/v0.1.0)** — early but functional. The simulation engine, plugin registry, CLI, reporting pipeline, and built-in schedulers/cache policies are implemented and tested. Real-engine replay adapters for vLLM, SGLang, and TensorRT-LLM are available via optional extras. On the roadmap: calibrating the simulator against GPU hardware (tooling published in `scripts/calibrate_against_vllm.py`), native engine integration, and a Vidur-based high-fidelity simulator.
 
 ## How this fits in
 
@@ -288,6 +289,7 @@ See [CLI Reference](docs/reference/cli.md) for the complete command list.
 - [Web Dashboard](docs/explanation/web-dashboard.md)
 - [Jupyter Dashboard](notebooks/dashboard.ipynb)
 - [Design Doc: Why InferArena?](docs/explanation/why-inferarena.md)
+- [Published Results](results/README.md)
 - [Blog: Reproducing LLM scheduling research in under five minutes](docs/blog/reproducing-llm-scheduling-research.md)
 
 ## Troubleshooting
