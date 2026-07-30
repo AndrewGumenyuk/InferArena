@@ -100,6 +100,7 @@ def test_priority_running_decode_cost_is_one() -> None:
     ]
     running[0].status = RequestStatus.RUNNING
     running[0].scheduled_steps = 1
+    running[0].prefilled_tokens = running[0].prompt_tokens
     state = SystemState(
         current_time=0.0,
         step=0,

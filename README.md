@@ -8,6 +8,8 @@
 >
 > Implement an inference strategy once. Evaluate it consistently across simulation and production inference engines. Compare against standard baselines. Publish reproducible results.
 
+![InferArena demo: comparing FCFS, SJF, and Sarathi-Serve](docs/assets/inferarena-demo.gif)
+
 ## Why InferArena?
 
 Developing new inference algorithms today is slow and difficult.
@@ -136,19 +138,20 @@ inferarena compare --config examples/experiment.yaml \
 
 ## See it optimize something real
 
-A variable-prompt workload with a tight token budget creates head-of-line blocking. FCFS completes 2 requests; shortest-job-first completes 33.
+A variable-prompt workload with a tight token budget creates head-of-line blocking. FCFS completes 2 requests; shortest-job-first completes 33; Sarathi-Serve completes all 64.
 
 ```bash
 inferarena compare --config examples/case_study_variable.yaml \
-  --schedulers fcfs,sjf
+  --schedulers fcfs,sjf,sarathi_serve
 ```
 
-![FCFS vs SJF on variable prompt lengths](docs/assets/case-study-comparison.png)
+![FCFS vs SJF vs Sarathi-Serve on variable prompt lengths](docs/assets/case-study-comparison.png)
 
 | Scheduler | Completed | Throughput (rps) |
 |-----------|-----------|------------------|
 | FCFS      | 2         | 0.09             |
 | SJF       | 33        | 0.93             |
+| Sarathi-Serve | 64    | 1.03             |
 
 [Read the case study →](docs/explanation/case-study.md)
 
@@ -278,10 +281,13 @@ See [CLI Reference](docs/reference/cli.md) for the complete command list.
 - [How to Add a Cache Policy](docs/how-to-guides/add-a-cache-policy.md)
 - [How to Add a Router](docs/how-to-guides/add-a-router.md)
 - [Architecture](docs/explanation/architecture.md)
+- [Simulation Assumptions and Limitations](docs/explanation/simulation-assumptions.md)
+- [Validation and Fidelity](docs/explanation/validation.md)
 - [Deployment](docs/explanation/deployment.md)
 - [Web Dashboard](docs/explanation/web-dashboard.md)
 - [Jupyter Dashboard](notebooks/dashboard.ipynb)
 - [Design Doc: Why InferArena?](docs/explanation/why-inferarena.md)
+- [Blog: Reproducing LLM scheduling research in under five minutes](docs/blog/reproducing-llm-scheduling-research.md)
 
 ## Troubleshooting
 

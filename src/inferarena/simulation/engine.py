@@ -152,28 +152,36 @@ class SimulationEngine(ExecutionEngine):
         cache_hits = 0
         cache_lookups = 0
         for request in batch.requests:
+            tokens_to_process = batch.tokens_for(request)
+
             if request.status == RequestStatus.WAITING:
-                # First step: prefill.
-                cached_tokens = self.cache_policy.lookup(request)
-                cache_lookups += request.prompt_tokens
-                cache_hits += min(cached_tokens, request.prompt_tokens)
-                effective_prefill = max(1, request.prompt_tokens - cached_tokens)
-                step_time = max(
-                    step_time,
-                    self.engine_spec.prefill_time_per_token * effective_prefill,
-                )
+                # First time scheduled: move from waiting to running.
                 request.status = RequestStatus.RUNNING
-                request.scheduled_steps += 1
                 self._waiting.remove(request)
                 self._running.append(request)
                 result = self._request_results[request.request_id]
                 result.scheduled_time = self._time
-                result.first_token_time = self._time + step_time
-                self.cache_policy.store(request)
+
+            if not request.is_prefill_complete:
+                # Prefill step (possibly chunked).
+                cached_tokens = self.cache_policy.lookup(request)
+                cache_lookups += request.prompt_tokens
+                cache_hits += min(cached_tokens, request.prompt_tokens)
+                effective_prefill = max(1, tokens_to_process - cached_tokens)
+                step_time = max(
+                    step_time,
+                    self.engine_spec.prefill_time_per_token * effective_prefill,
+                )
+                request.prefilled_tokens += tokens_to_process
+                request.scheduled_steps += 1
+                if request.is_prefill_complete:
+                    result = self._request_results[request.request_id]
+                    result.first_token_time = self._time + step_time
+                    self.cache_policy.store(request)
             else:
                 # Decode step.
                 step_time = max(step_time, self.engine_spec.decode_time_per_token)
-                request.advance(1)
+                request.advance(tokens_to_process)
 
         self._cache_hits += cache_hits
         self._cache_lookups += cache_lookups

@@ -1,6 +1,6 @@
-# How shortest-job-first improves throughput under variable prompt lengths
+# How scheduling policy changes throughput under variable prompt lengths
 
-This case study shows how a one-line scheduling change can dramatically improve throughput when prompt lengths vary and the batch token budget is tight.
+This case study shows how three different schedulers handle the same workload, and why a production-ready policy like Sarathi-Serve beats naive baselines when prompt lengths vary and the batch token budget is tight.
 
 ## The scenario
 
@@ -53,49 +53,57 @@ Key knobs:
 
 ## Running the comparison
 
-Compare FCFS against shortest-job-first (SJF):
+Compare three schedulers:
 
 ```bash
 inferarena compare --config examples/case_study_variable.yaml \
-  --schedulers fcfs,sjf
+  --schedulers fcfs,sjf,sarathi_serve
 ```
 
 ## Results
 
 Under the fixed 20,000-step budget:
 
-![FCFS vs SJF on variable prompt lengths](../assets/case-study-comparison.png)
+![FCFS vs SJF vs Sarathi-Serve on variable prompt lengths](../assets/case-study-comparison.png)
 
-| Metric | FCFS | SJF |
-|---|---|---|
-| Completed requests | 2 | 33 |
-| Unfinished requests | 62 | 31 |
-| Completion rate | 3.1% | 51.6% |
-| Throughput (rps) | 0.09 | 0.93 |
-| TTFT p50 (ms) | 23.30 | 38.55 |
-| Latency p50 (ms) | 1457.90 | 1595.15 |
+| Metric | FCFS | SJF | Sarathi-Serve |
+|---|---|---|---|
+| Completed requests | 2 | 33 | 64 |
+| Unfinished requests | 62 | 31 | 0 |
+| Completion rate | 3.1% | 51.6% | 100% |
+| Throughput (rps) | 0.09 | 0.93 | 1.03 |
+| Total steps | 20000 | 20000 | 3023 |
+| TTFT p50 (ms) | 23.30 | 38.55 | 22789.03 |
+| Latency p50 (ms) | 1457.90 | 1595.15 | 24333.41 |
 
-SJF completes **16.5× more requests** and achieves **10.3× higher throughput** than FCFS within the same execution budget.
+Sarathi-Serve completes **all 64 requests** in just 3,023 steps, while FCFS fails to finish 97% of the workload and SJF leaves 31 requests unfinished.
 
 ## Interpreting latency percentiles
 
-TTFT and latency percentiles above are calculated only over *completed* requests. Because FCFS completes just two requests, its latency and TTFT percentiles are not directly comparable to SJF's. The apparently lower FCFS latency is affected by severe survivorship bias: the metric ignores the 62 requests that never finished.
+TTFT and latency percentiles above are calculated only over *completed* requests. Because FCFS completes just two requests, its latency and TTFT percentiles are not directly comparable to the others. The apparently lower FCFS latency is affected by severe survivorship bias: the metric ignores the 62 requests that never finished.
 
 The main result of this experiment is therefore **completion rate and throughput under a fixed execution budget**, not a latency comparison.
 
-## Why this happens
+## Why Sarathi-Serve wins
 
 FCFS processes requests in arrival order. When a 1024-token prompt arrives first, it consumes multiple prefill steps before any later request can enter the batch. By the time the long request finishes prefill, many short requests are stuck in the queue and the run ends before they are served.
 
-SJF reorders the waiting queue by estimated job size. Short prompts jump ahead, get through prefill quickly, and free the batch budget for the next short prompt. The long prompts still run, but they no longer block the rest of the queue.
+SJF reorders the waiting queue by estimated job size. Short prompts jump ahead, get through prefill quickly, and free the batch budget for the next short prompt. But long prompts are starved: 31 requests never finish.
+
+Sarathi-Serve takes a different approach. It keeps all running decode requests in the batch, adds partial prefills, and admits new requests only after running requests are accommodated. By chunking large prefills and never stalling decodes, it processes the entire workload fairly while still using the token budget efficiently.
 
 ## Trade-offs
 
-The case study is not claiming SJF is universally better.
+The case study is not claiming one scheduler is universally better.
 
-- **Survivorship bias:** Latency metrics only reflect completed requests. A fair latency comparison would require running both policies until every request finishes or applying a common completion cutoff.
+- **Survivorship bias:** Latency metrics only reflect completed requests. A fair latency comparison would require running all policies until every request finishes or applying a common completion cutoff.
 - **Starvation:** Pure SJF can indefinitely delay large requests under sustained arrivals of short requests. A production policy would usually add aging, deadlines, or weighted priorities to balance throughput and fairness.
-- **Workload-dependent:** On a uniform workload with equal prompt lengths, FCFS and SJF behave similarly.
+- **Workload-dependent:** On a uniform workload with equal prompt lengths, FCFS and SJF behave similarly. Sarathi-Serve's advantages appear when prefill lengths vary and the batch budget is constrained.
+- **Latency vs throughput:** Sarathi-Serve maximizes completion and throughput but pays higher TTFT and tail latency for long prompts. SJF optimizes short-request latency at the cost of starving long requests.
+
+## Reproducing published work
+
+This case study includes a faithful reproduction of the [Sarathi-Serve](https://arxiv.org/abs/2403.02310) scheduler (Agrawal et al., 2024) as a built-in plugin. The implementation follows Algorithm 3 from the paper: pack running decodes first, then partially completed prefills, then new requests, always respecting the chunk size and token budget.
 
 ## Takeaway
 
@@ -105,5 +113,5 @@ Try it yourself:
 
 ```bash
 inferarena compare --config examples/case_study_variable.yaml \
-  --schedulers fcfs,sjf,chunked_prefill,priority
+  --schedulers fcfs,sjf,sarathi_serve
 ```

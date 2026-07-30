@@ -19,23 +19,30 @@ def main() -> None:
     completed = [d["completed_requests"] for d in data]
     throughput = [d["throughput_rps"] for d in data]
 
-    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+    colors = {
+        "fcfs": "#e74c3c",
+        "sjf": "#f39c12",
+        "sarathi_serve": "#2ecc71",
+    }
+    bar_colors = [colors.get(s, "#95a5a6") for s in schedulers]
 
-    axes[0].bar(schedulers, completed, color=["#e74c3c", "#2ecc71"])
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+    axes[0].bar(schedulers, completed, color=bar_colors)
     axes[0].set_ylabel("Completed requests")
     axes[0].set_title("Completed requests (64 total)")
     axes[0].set_ylim(0, max(completed) * 1.2)
     for i, v in enumerate(completed):
         axes[0].text(i, v + 1, str(v), ha="center")
 
-    axes[1].bar(schedulers, throughput, color=["#e74c3c", "#2ecc71"])
+    axes[1].bar(schedulers, throughput, color=bar_colors)
     axes[1].set_ylabel("Throughput (req/s)")
     axes[1].set_title("Throughput under 20,000-step budget")
     axes[1].set_ylim(0, max(throughput) * 1.2)
     for i, v in enumerate(throughput):
         axes[1].text(i, v + 0.02, f"{v:.2f}", ha="center")
 
-    fig.suptitle("FCFS vs SJF on variable prompt lengths")
+    fig.suptitle("FCFS vs SJF vs Sarathi-Serve on variable prompt lengths")
     plt.tight_layout()
 
     output = Path("docs/assets/case-study-comparison.png")

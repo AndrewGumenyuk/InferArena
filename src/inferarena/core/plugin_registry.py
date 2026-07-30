@@ -49,6 +49,7 @@ class PluginRegistry:
         from inferarena.plugins.schedulers.fcfs import FCFSScheduler
         from inferarena.plugins.schedulers.priority import PriorityScheduler
         from inferarena.plugins.schedulers.round_robin import RoundRobinScheduler
+        from inferarena.plugins.schedulers.sarathi_serve import SarathiServeScheduler
         from inferarena.plugins.schedulers.sjf import SJFScheduler
         from inferarena.simulation.router import LeastLoadedRouter, RoundRobinRouter
 
@@ -57,6 +58,7 @@ class PluginRegistry:
         self.register_scheduler(PriorityScheduler)
         self.register_scheduler(SJFScheduler)
         self.register_scheduler(RoundRobinScheduler)
+        self.register_scheduler(SarathiServeScheduler)
 
         self.register_cache_policy(NoOpCachePolicy)
         self.register_cache_policy(PrefixCache)

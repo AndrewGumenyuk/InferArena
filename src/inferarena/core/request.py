@@ -46,13 +46,19 @@ class Request:
         self.priority = priority
         self.status = RequestStatus.WAITING
         self.scheduled_steps = 0
+        self.prefilled_tokens = 0
         self.generated_tokens = 0
         self._created_at = datetime.now().isoformat()
 
     @property
     def is_prefill_complete(self) -> bool:
         """Return True if the prefill phase is complete."""
-        return self.scheduled_steps > 0
+        return self.prefilled_tokens >= self.prompt_tokens
+
+    @property
+    def remaining_prefill(self) -> int:
+        """Return the number of prompt tokens still to be prefilled."""
+        return max(0, self.prompt_tokens - self.prefilled_tokens)
 
     @property
     def is_complete(self) -> bool:
@@ -61,7 +67,10 @@ class Request:
 
     def advance(self, tokens: int = 1) -> None:
         """Advance the request by the given number of tokens."""
-        self.generated_tokens += tokens
+        if not self.is_prefill_complete:
+            self.prefilled_tokens += tokens
+        else:
+            self.generated_tokens += tokens
         self.scheduled_steps += 1
         if self.is_complete:
             self.status = RequestStatus.COMPLETED
