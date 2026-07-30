@@ -9,11 +9,18 @@ import pandas as pd
 
 from inferarena.reporting.dashboard import discover_experiments, load_request_results
 
-st: Any
-try:
-    import streamlit as st
-except ImportError:  # pragma: no cover - optional dependency
-    st = None
+
+def _import_streamlit() -> Any:
+    """Import streamlit if available, returning None otherwise."""
+    try:
+        import streamlit
+
+        return streamlit
+    except ImportError:  # pragma: no cover - optional dependency
+        return None
+
+
+st = _import_streamlit()
 
 
 def _summaries_to_df(summaries: list[dict[str, Any]]) -> pd.DataFrame:
