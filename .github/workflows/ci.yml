@@ -47,7 +47,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build base image
-        run: docker build -t inferarena .
+        run: docker build --target base -t inferarena .
 
       - name: Smoke test CLI in container
         run: |
