@@ -10,6 +10,12 @@ Google Colab T4 works.
 
 ## Option A: Google Colab (free, ~30 minutes)
 
+**Fastest path:** open
+[`notebooks/calibration_colab.ipynb`](../../notebooks/calibration_colab.ipynb)
+in Colab ([direct link](https://colab.research.google.com/github/AndrewGumenyuk/InferArena/blob/main/notebooks/calibration_colab.ipynb)),
+select **Runtime → Change runtime type → T4 GPU**, then **Runtime → Run all**.
+The manual steps below are exactly what the notebook automates.
+
 1. Open a new notebook at <https://colab.research.google.com> and select
    **Runtime → Change runtime type → T4 GPU**.
 
