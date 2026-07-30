@@ -1,6 +1,6 @@
 """InferArena: An experimentation platform for LLM inference systems."""
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from inferarena.core.batch import Batch
 from inferarena.core.cache_policy import CachePolicy

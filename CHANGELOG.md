@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-07-30
+
+### Fixed
+
+- MyPy failure on the dashboard's optional streamlit import: the
+  `type: ignore` pattern was judged inconsistently across mypy versions
+  (unused-ignore in one, no-redef in another). Replaced with a single
+  `_import_streamlit()` helper that binds the name once.
+- Docker CI job built the final stage (`dev`, empty ENTRYPOINT) instead of
+  `base`, so the container smoke test could not exec the CLI.
+
+### Changed
+
+- README: added a when-to-use / when-not-to-use table, the missing
+  `git clone` step in Quick start, a release badge, and wording that
+  accurately describes real-engine adapters as workload replay with external
+  latency measurement.
+
 ## [0.1.0] - 2026-07-27
 
 First public release.
